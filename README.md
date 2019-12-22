@@ -2,7 +2,7 @@
 
 Real-time dense visual SLAM system capable of capturing comprehensive dense globally consistent surfel-based maps of room scale environments explored using an RGB-D camera.
 
-**This version of ElasticFusion has been modified as part of ILLIXR. Fast odometry has been enabled and the GUI has been disabled.**
+**Part of [ILLIXR](https://github.com/ILLIXR/ILLIXR), the Illinios Extended Reality Benchmark Suite. This version of ElasticFusion has been modified to enable fast odometry and disable the GUI.**
 
 # Related Publications #
 Please cite this work if you make use of our system in any of your own endeavors:
