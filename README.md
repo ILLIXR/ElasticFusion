@@ -2,7 +2,13 @@
 
 Real-time dense visual SLAM system capable of capturing comprehensive dense globally consistent surfel-based maps of room scale environments explored using an RGB-D camera.
 
-**Part of [ILLIXR](https://github.com/ILLIXR/ILLIXR), the Illinios Extended Reality Benchmark Suite. This version of ElasticFusion has been modified to enable fast odometry and disable the GUI.**
+**Part of [ILLIXR](https://github.com/ILLIXR/ILLIXR), the Illinios Extended Reality Benchmark Suite. This version of ElasticFusion has been modified to enable fast odometry and disable the GUI.** Please use the following command to replicate the results from the paper:
+
+```bash
+./ElasticFusion -l dyson_lab.klg -fo -nso -sc -q
+```
+
+The description of each flag is provided in "How Do I Use It?" below.
 
 # Related Publications #
 Please cite this work if you make use of our system in any of your own endeavors:
