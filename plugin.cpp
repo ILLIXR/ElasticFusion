@@ -16,21 +16,22 @@ using namespace ILLIXR;
 
 class elastic_fusion : public ILLIXR::threadloop {
 public:
-	elastic_fusion(phonebook* pb)
-		: sb{pb->lookup_impl<switchboard>()}
-		, _m_cam{sb->subscribe_latest<ef_cam_type>("ef_cam")}
+	elastic_fusion(const std::string& name_, phonebook* pb_)
+		: threadloop(name_, pb_)
+		, sb{pb->lookup_impl<switchboard>()}
+		, _m_cam{sb->subscribe_latest<rgb_depth_type>("rgb_depth")}
 	{
 		// Initialize time
 		sync = std::chrono::high_resolution_clock::now();
 
-		Resolution::getInstance(640, 480);
-    	Intrinsics::getInstance(528, 528, 320, 240);
+		Resolution::getInstance(1280, 720);
+    Intrinsics::getInstance(681.11, 681.11, 611.625, 401.201);
 		// Create GL context before initializing EF
 		pangolin::Params windowParams;
-    	windowParams.Set("SAMPLE_BUFFERS", 0);
-    	windowParams.Set("SAMPLES", 0);
-    	pangolin::CreateWindowAndBind("Main", 1280, 800, windowParams);
-    	eFusion = new ElasticFusion();
+    windowParams.Set("SAMPLE_BUFFERS", 0);
+    windowParams.Set("SAMPLES", 0);
+    pangolin::CreateWindowAndBind("Main", 1280, 800, windowParams);
+    eFusion = new ElasticFusion();
 	}
 
 protected:
@@ -50,12 +51,15 @@ protected:
 		auto most_recent_cam = _m_cam->get_latest_ro();
 
 		Eigen::Matrix4f* currentPose = 0;
-		eFusion->processFrame(most_recent_cam->rgb, most_recent_cam->depth, most_recent_cam->timestamp, currentPose, 1);
+		if (most_recent_cam == NULL) {
+			return;
+		}
+		eFusion->processFrame(most_recent_cam->rgb, most_recent_cam->depth, most_recent_cam->time, currentPose, 1);
 	}
 
 private:
-	switchboard * sb;
-	std::unique_ptr<reader_latest<ef_cam_type>> _m_cam;
+	std::shared_ptr<switchboard> sb;
+	std::unique_ptr<reader_latest<rgb_depth_type>> _m_cam;
 	std::chrono::time_point<std::chrono::system_clock> sync;
 
 	ElasticFusion* eFusion;

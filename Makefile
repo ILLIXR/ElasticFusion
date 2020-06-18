@@ -1,7 +1,7 @@
 CXX=clang++
-CXXFLAGS=-std=c++2a -Wall -fPIC -I./Core/src
+CXXFLAGS=-std=c++2a -Wall -fPIC -I./Core/src -I/home/hyjale/Pangolin/build/src/include/
 
-LD_LIBS=-lpthread -pthread -lpangolin
+LD_LIBS=-lpthread -pthread -lpangolin -L/user/local/lib/libefusion.so
 
 DBG_FLAGS=-g
 OPT_FLAGS=-O3
