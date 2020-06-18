@@ -1,14 +1,14 @@
+#include <pangolin/pangolin.h>
+#include <pangolin/gl/gl.h>
+#include <pangolin/gl/gldraw.h>
+
 #include "common/switchboard.hpp"
-#include "common/data_format.hpp"
-#include "data_loading.hpp"
 #include "common/data_format.hpp"
 #include "common/threadloop.hpp"
 
 #include "Core/src/ElasticFusion.h"
 
-#include <pangolin/pangolin.h>
-#include <pangolin/gl/gl.h>
-#include <pangolin/gl/gldraw.h>
+
 
 using namespace ILLIXR;
 
@@ -17,8 +17,8 @@ using namespace ILLIXR;
 class elastic_fusion : public ILLIXR::threadloop {
 public:
 	elastic_fusion(phonebook* pb)
-		: _m_sb{pb->lookup_impl<switchboard>()}
-		, _m_cam{sb->subscribe_latest<ef_cam_type>("ef_came")}
+		: sb{pb->lookup_impl<switchboard>()}
+		, _m_cam{sb->subscribe_latest<ef_cam_type>("ef_cam")}
 	{
 		// Initialize time
 		sync = std::chrono::high_resolution_clock::now();
@@ -31,7 +31,6 @@ public:
     	windowParams.Set("SAMPLES", 0);
     	pangolin::CreateWindowAndBind("Main", 1280, 800, windowParams);
     	eFusion = new ElasticFusion();
-    	eFusion->processFrame(rgb, depth, timestamp, currentPose, weightMultiplier);
 	}
 
 protected:
@@ -55,7 +54,7 @@ protected:
 	}
 
 private:
-	switchboard *sb;
+	switchboard * sb;
 	std::unique_ptr<reader_latest<ef_cam_type>> _m_cam;
 	std::chrono::time_point<std::chrono::system_clock> sync;
 

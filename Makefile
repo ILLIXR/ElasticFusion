@@ -1,7 +1,7 @@
 CXX=clang++
 CXXFLAGS=-std=c++2a -Wall -fPIC -I./Core/src
 
-LD_LIBS=-lpthread -pthread
+LD_LIBS=-lpthread -pthread -lpangolin
 
 DBG_FLAGS=-g
 OPT_FLAGS=-O3
