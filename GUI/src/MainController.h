@@ -2,16 +2,16 @@
  * This file is part of ElasticFusion.
  *
  * Copyright (C) 2015 Imperial College London
- * 
- * The use of the code within this file and all code within files that 
- * make up the software that is ElasticFusion is permitted for 
- * non-commercial purposes only.  The full terms and conditions that 
- * apply to the code within this file are detailed within the LICENSE.txt 
- * file and at <http://www.imperial.ac.uk/dyson-robotics-lab/downloads/elastic-fusion/elastic-fusion-license/> 
- * unless explicitly stated.  By downloading this file you agree to 
+ *
+ * The use of the code within this file and all code within files that
+ * make up the software that is ElasticFusion is permitted for
+ * non-commercial purposes only.  The full terms and conditions that
+ * apply to the code within this file are detailed within the LICENSE.txt
+ * file and at <http://www.imperial.ac.uk/dyson-robotics-lab/downloads/elastic-fusion/elastic-fusion-license/>
+ * unless explicitly stated.  By downloading this file you agree to
  * comply with these terms.
  *
- * If you wish to use any of this code for commercial purposes then 
+ * If you wish to use any of this code for commercial purposes then
  * please email researchcontracts.engineering@imperial.ac.uk.
  *
  */
@@ -24,18 +24,27 @@
 #include "Tools/RawLogReader.h"
 #include "Tools/LiveLogReader.h"
 
+#include "common/switchboard.hpp"
+#include "common/data_format.hpp"
+#include "common/threadloop.hpp"
+
 #ifndef MAINCONTROLLER_H_
 #define MAINCONTROLLER_H_
 
-class MainController
-{
+class MainController : public ILLIXR::threadloop {
+
     public:
-        MainController(int argc, char * argv[]);
+        MainController(const std::string& name_, phonebook* pb_);
         virtual ~MainController();
 
-        void launch();
+    protected:
+        virtual void _p_one_iteration() override;
 
     private:
+        std::shared_ptr<ILLIXR::switchboard> sb;
+        std::unique_ptr<ILLIXR::reader_latest<rgb_depth_type>> _m_cam;
+
+
         void run();
 
         void loadCalibration(const std::string & filename);
@@ -78,6 +87,8 @@ class MainController
         bool resetButton;
 
         Resize * resizeStream;
+
+        std::chrono::time_point<std::chrono::system_clock> sync;
 };
 
 #endif /* MAINCONTROLLER_H_ */

@@ -2,72 +2,54 @@
  * This file is part of ElasticFusion.
  *
  * Copyright (C) 2015 Imperial College London
- * 
- * The use of the code within this file and all code within files that 
- * make up the software that is ElasticFusion is permitted for 
- * non-commercial purposes only.  The full terms and conditions that 
- * apply to the code within this file are detailed within the LICENSE.txt 
- * file and at <http://www.imperial.ac.uk/dyson-robotics-lab/downloads/elastic-fusion/elastic-fusion-license/> 
- * unless explicitly stated.  By downloading this file you agree to 
+ *
+ * The use of the code within this file and all code within files that
+ * make up the software that is ElasticFusion is permitted for
+ * non-commercial purposes only.  The full terms and conditions that
+ * apply to the code within this file are detailed within the LICENSE.txt
+ * file and at <http://www.imperial.ac.uk/dyson-robotics-lab/downloads/elastic-fusion/elastic-fusion-license/>
+ * unless explicitly stated.  By downloading this file you agree to
  * comply with these terms.
  *
- * If you wish to use any of this code for commercial purposes then 
+ * If you wish to use any of this code for commercial purposes then
  * please email researchcontracts.engineering@imperial.ac.uk.
  *
  */
- 
+
 #include "MainController.h"
 
-MainController::MainController(int argc, char * argv[])
- : good(true),
+#define EF_EPOCH (1.0/10.0)
+
+MainController::MainController(const std::string& name_, phonebook* pb_)
+    : ILLIXR::threadloop(name_, pb_),
    eFusion(0),
    gui(0),
    groundTruthOdometry(0),
    logReader(0),
    framesToSkip(0),
    resetButton(false),
-   resizeStream(0)
+   resizeStream(0), good(true)
+   , sb{pb->lookup_impl<ILLIXR::switchboard>()}
+    , _m_cam{sb->subscribe_latest<ILLIXR::rgb_depth_type>("rgb_depth")}
+
 {
+    int argc = 1;
+    char** argv = NULL;
     std::string empty;
     iclnuim = Parse::get().arg(argc, argv, "-icl", empty) > -1;
 
     std::string calibrationFile;
     Parse::get().arg(argc, argv, "-cal", calibrationFile);
 
-    Resolution::getInstance(640, 480);
+    Resolution::getInstance(1280, 720);
+    Intrinsics::getInstance(681.11, 681.11, 611.625, 401.201);
 
-    if(calibrationFile.length())
-    {
-        loadCalibration(calibrationFile);
-    }
-    else
-    {
-        Intrinsics::getInstance(528, 528, 320, 240);
-    }
+    sync = std::chrono::high_resolution_clock::now();
 
     Parse::get().arg(argc, argv, "-l", logFile);
 
-    if(logFile.length())
-    {
-        logReader = new RawLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
-    }
-    else
-    {
-        bool flipColors = Parse::get().arg(argc,argv,"-f",empty) > -1;
-        logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::OpenNI2);
-
-        good = ((LiveLogReader *)logReader)->cam->ok();
-
-#ifdef WITH_REALSENSE
-        if(!good)
-        {
-          delete logReader;
-          logReader = new LiveLogReader(logFile, flipColors, LiveLogReader::CameraType::RealSense);
-
-          good = ((LiveLogReader *)logReader)->cam->ok();
-        }
-#endif
-    }
+    bool flipColors = Parse::get().arg(argc,argv,"-f",empty) > -1;
+    logReader = new LiveLogReader(logFile, flipColors, sb);
 
     if(Parse::get().arg(argc, argv, "-p", poseFile) > 0)
     {
@@ -174,9 +156,18 @@ void MainController::loadCalibration(const std::string & filename)
     Intrinsics::getInstance(fx, fy, cx, cy);
 }
 
-void MainController::launch()
+void MainController::_p_one_iteration()
 {
-    while(good)
+    std::chrono::time_point<std::chrono::system_clock> blockStart = std::chrono::high_resolution_clock::now();
+    if (blockStart < sync) {
+        std::this_thread::yield(); // ←_←
+        // continue;
+        return;
+    }
+    // seconds in double
+    double timespent = std::chrono::duration<double>(blockStart-sync).count();
+    int num_epoch = ceil(timespent/EF_EPOCH);
+    sync += std::chrono::microseconds(num_epoch*((int)(EF_EPOCH*1000000)));
     {
         if(eFusion)
         {
@@ -210,11 +201,6 @@ void MainController::launch()
                                         frameToFrameRGB,
                                         logReader->getFile());
         }
-        else
-        {
-            break;
-        }
-
     }
 }
 

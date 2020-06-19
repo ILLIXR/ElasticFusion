@@ -33,6 +33,12 @@
 #include "LogReader.h"
 #include "CameraInterface.h"
 
+#include "common/switchboard.hpp"
+#include "common/data_format.hpp"
+#include "common/threadloop.hpp"
+
+using namespace ILLIXR;
+
 class LiveLogReader : public LogReader
 {
 	public:
@@ -41,7 +47,7 @@ class LiveLogReader : public LogReader
       OpenNI2,RealSense
     };
 
-		LiveLogReader(std::string file, bool flipColors, CameraType type);
+		LiveLogReader(std::string file, bool flipColors, std::shared_ptr<switchboard> sb);
 
 		virtual ~LiveLogReader();
 
@@ -75,9 +81,8 @@ class LiveLogReader : public LogReader
 
         void setAuto(bool value);
 
-		CameraInterface * cam;
-
 	private:
+        std::unique_ptr<reader_latest<rgb_depth_type>> _m_cam;
 		int64_t lastFrameTime;
 		int lastGot;
 };
