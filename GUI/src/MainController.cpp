@@ -275,6 +275,9 @@ void MainController::run()
 
                 eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
 
+		// Record frame time
+		frame_times.push_back(Stopwatch::getInstance().getTimings().at("Run"));
+
                 if(currentPose)
                 {
                     delete currentPose;
@@ -563,4 +566,17 @@ void MainController::run()
 
         TOCK("GUI");
     }
+
+    // Dump frame times
+    double average_frame_time = 0.0;
+    std::ofstream output_file;
+    output_file.open("ef_times.data", std::ios::out);
+    output_file << "# Frame Time\n";
+    for (unsigned i = 0; i < frame_times.size(); i++) {
+        output_file << i << " " << frame_times[i] << std::endl;
+        average_frame_time += frame_times[i];
+    }
+    output_file.close();
+
+    std::cout << "Average frame time = " << average_frame_time / ((double) frame_times.size()) << std::endl;
 }

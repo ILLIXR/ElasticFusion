@@ -78,6 +78,8 @@ class MainController
         bool resetButton;
 
         Resize * resizeStream;
+
+	std::vector<double> frame_times;
 };
 
 #endif /* MAINCONTROLLER_H_ */
