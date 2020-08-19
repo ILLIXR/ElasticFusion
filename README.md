@@ -5,7 +5,7 @@ Real-time dense visual SLAM system capable of capturing comprehensive dense glob
 **Part of [ILLIXR](https://github.com/ILLIXR/ILLIXR), the Illinios Extended Reality Benchmark Suite. This version of ElasticFusion has been modified to enable fast odometry and disable the GUI.** Please use the following command to replicate the results from the paper:
 
 ```bash
-./ElasticFusion -l dyson_lab.klg -fo -nso -sc -q
+./ElasticFusion -l dyson_lab.klg -fo -nso -sc -q -prof
 ```
 
 The description of each flag is provided in "How Do I Use It?" below.
@@ -116,6 +116,7 @@ The GUI (*ElasticFusion*) can take a bunch of parameters when launching it from 
 * *-r* : Rewind and loop log forever. 
 * *-ftf* : Do frame-to-frame RGB tracking. 
 * *-sc* : Showcase mode (minimal GUI).
+* *-prof* : Profile mode (no GUI).
 
 Essentially by default *./ElasticFusion* will try run off an attached ASUS sensor live. You can provide a .klg log file instead with the -l parameter. You can capture .klg format logs using either [Logger1](https://github.com/mp3guy/Logger1) or [Logger2](https://github.com/mp3guy/Logger2). 
 

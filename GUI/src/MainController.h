@@ -79,7 +79,9 @@ class MainController
 
         Resize * resizeStream;
 
-	std::vector<double> frame_times;
+        bool profile;
+
+        std::vector<double> frame_times;
 };
 
 #endif /* MAINCONTROLLER_H_ */
