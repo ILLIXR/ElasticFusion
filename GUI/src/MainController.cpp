@@ -276,8 +276,24 @@ void MainController::run()
 
                 eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
 
-                // Record frame time
-                frame_times.push_back(Stopwatch::getInstance().getTimings().at("Run"));
+                // Log time and points. Drop the first two frames because they don't do full runs
+                if (eFusion->getTick() > 2) {
+                    const auto frame_time = Stopwatch::getInstance().getTimings().at("Run");
+                    const auto preprocessing_time = Stopwatch::getInstance().getTimings().at("Preprocess");
+                    const auto tracking_time = Stopwatch::getInstance().getTimings().at("Tracking1") + Stopwatch::getInstance().getTimings().at("Tracking2");
+                    const auto fusion_time = Stopwatch::getInstance().getTimings().at("Fuse::Data") + Stopwatch::getInstance().getTimings().at("Fuse::Copy");
+                    const auto mapping_time = frame_time - preprocessing_time - tracking_time - fusion_time;
+                    std::cout << "Run: " << frame_time << "\n";
+                    std::cout << "\tPreprocessing: " << preprocessing_time << "\n";
+                    std::cout << "\tTracking: " << tracking_time << "\n";
+                    std::cout << "\tMapping: " << mapping_time << "\n";
+                    std::cout << "\tFusion: " << fusion_time << "\n";
+                    std::cout << "\n";
+                    times.push_back(Times{preprocessing_time, tracking_time, mapping_time, fusion_time, frame_time});
+
+                    // Number of map points
+                    points.push_back(eFusion->getGlobalModel().lastCount());
+                }
 
                 if(currentPose)
                 {
@@ -571,16 +587,53 @@ void MainController::run()
         TOCK("GUI");
     }
 
-    // Dump frame times
+    // Dump time per frame
+    double average_preprocessing_time = 0.0;
+    double average_tracking_time = 0.0;
+    double average_mapping_time = 0.0;
+    double average_fusion_time = 0.0;
     double average_frame_time = 0.0;
-    std::ofstream output_file;
-    output_file.open("ef_times.data", std::ios::out);
-    output_file << "# Frame Time\n";
-    for (unsigned i = 0; i < frame_times.size(); i++) {
-        output_file << i << " " << frame_times[i] << std::endl;
-        average_frame_time += frame_times[i];
-    }
-    output_file.close();
 
-    std::cout << "Average frame time = " << average_frame_time / ((double) frame_times.size()) << std::endl;
+    std::ofstream output_times_file;
+    output_times_file.open("ef_times.data", std::ios::out);
+    output_times_file << "#Frame Preprocessing Tracking Mapping Fusion Total\n";
+
+    for (unsigned i = 0; i < times.size(); i++) {
+        const auto preprocessing_time = times[i].preprocessing;
+        const auto tracking_time = times[i].tracking;
+        const auto mapping_time = times[i].mapping;
+        const auto fusion_time = times[i].fusion;
+        const auto frame_time = times[i].frame;
+
+        output_times_file << i
+                          << " " << preprocessing_time
+                          << " " << tracking_time
+                          << " " << mapping_time
+                          << " " << fusion_time
+                          << " " << frame_time
+                          << std::endl;
+
+        average_preprocessing_time += preprocessing_time;
+        average_tracking_time += tracking_time;
+        average_mapping_time += mapping_time;
+        average_fusion_time += fusion_time;
+        average_frame_time += frame_time;
+    }
+    output_times_file.close();
+
+    std::cout << "Average frame time = " << average_frame_time / ((double) times.size()) << std::endl;
+    std::cout << "Average preprocessing time = " << average_preprocessing_time / ((double) times.size()) << std::endl;
+    std::cout << "Average tracking time = " << average_tracking_time / ((double) times.size()) << std::endl;
+    std::cout << "Average mapping time = " << average_mapping_time / ((double) times.size()) << std::endl;
+    std::cout << "Average fusion time = " << average_fusion_time / ((double) times.size()) << std::endl;
+
+    // Dump points per frame
+    std::ofstream output_points_file;
+    output_points_file.open("ef_points.data", std::ios::out);
+    output_points_file << "#Frame Points\n";
+
+    for (unsigned i = 0; i < points.size(); i++) {
+        output_points_file << i << " " << points[i] << "\n";
+    }
+    output_points_file.close();
 }

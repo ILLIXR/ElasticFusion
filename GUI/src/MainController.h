@@ -81,7 +81,18 @@ class MainController
 
         bool profile;
 
-        std::vector<double> frame_times;
+        // Logging
+
+        struct Times {
+            double preprocessing;
+            double tracking;
+            double mapping;
+            double fusion;
+            double frame;
+        };
+
+        std::vector<Times> times;
+        std::vector<unsigned> points;
 };
 
 #endif /* MAINCONTROLLER_H_ */

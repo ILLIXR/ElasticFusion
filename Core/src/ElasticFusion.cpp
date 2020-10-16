@@ -262,15 +262,17 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
 {
     TICK("Run");
 
+    TICK("Preprocess");
+
     textures[GPUTexture::DEPTH_RAW]->texture->Upload(depth, GL_LUMINANCE_INTEGER_EXT, GL_UNSIGNED_SHORT);
     textures[GPUTexture::RGB]->texture->Upload(rgb, GL_RGB, GL_UNSIGNED_BYTE);
-
-    TICK("Preprocess");
 
     filterDepth();
     metriciseDepth();
 
     TOCK("Preprocess");
+
+    TICK("Tracking1");
 
     //First run
     if(tick == 1)
@@ -404,9 +406,15 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
 
         weighting = std::max(1.0f - (weighting / largest), minWeight) * weightMultiplier;
 
+        TOCK("Tracking1");
+
         std::vector<Ferns::SurfaceConstraint> constraints;
 
+        TICK("Predict1");
+
         predict();
+
+        TOCK("Predict1");
 
         Eigen::Matrix4f recoveryPose = currPose;
 
@@ -424,6 +432,8 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
                                            lost);
             TOCK("Ferns::findFrame");
         }
+
+        TICK("Deformation1");
 
         std::vector<float> rawGraph;
 
@@ -465,6 +475,8 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
             }
         }
 
+        TOCK("Deformation1");
+
         //If we didn't match to a fern
         if(!lost && closeLoops && rawGraph.size() == 0)
         {
@@ -479,6 +491,8 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
                                      timeDelta,
                                      IndexMap::INACTIVE);
             TOCK("IndexMap::INACTIVE");
+
+            TICK("Tracking2");
 
             //WARNING initICP* must be called before initRGB*
             modelToModel.initICPModel(indexMap.oldVertexTex(), indexMap.oldNormalTex(), maxDepthProcessed, currPose);
@@ -514,6 +528,10 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
 
             estPose.topRightCorner(3, 1) = trans;
             estPose.topLeftCorner(3, 3) = rot;
+
+            TOCK("Tracking2");
+
+            TICK("Deformation2");
 
             if(covOk && modelToModel.lastICPCount > icpCountThresh && modelToModel.lastICPError < icpErrThresh)
             {
@@ -565,6 +583,8 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
                     }
                 }
             }
+
+            TOCK("Deformation2");
         }
 
         if(!rgbOnly && trackingOk && !lost)
