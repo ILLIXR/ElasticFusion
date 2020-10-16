@@ -104,7 +104,7 @@ class RGBDOdometry
 
         std::vector<int2> pyrDims;
 
-        static const int NUM_PYRS = 1;
+        static const int NUM_PYRS = 3;
 
         DeviceArray2D<float> lastDepth[NUM_PYRS];
         DeviceArray2D<unsigned char> lastImage[NUM_PYRS];

@@ -115,7 +115,7 @@ MainController::MainController(int argc, char * argv[])
 
     gui->flipColors->Ref().Set(logReader->flipColors);
     gui->rgbOnly->Ref().Set(false);
-    gui->pyramid->Ref().Set(false);
+    gui->pyramid->Ref().Set(true);
     gui->fastOdom->Ref().Set(fastOdom);
     gui->confidenceThreshold->Ref().Set(confidence);
     gui->depthCutoff->Ref().Set(depth);
