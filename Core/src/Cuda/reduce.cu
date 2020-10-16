@@ -89,43 +89,44 @@ __device__ __forceinline__ T __ldg(const T* ptr)
 
 __inline__  __device__ JtJJtrSE3 warpReduceSum(JtJJtrSE3 val)
 {
+    const unsigned active_mask = 0xffffffff;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val.aa += __shfl_down(val.aa, offset);
-        val.ab += __shfl_down(val.ab, offset);
-        val.ac += __shfl_down(val.ac, offset);
-        val.ad += __shfl_down(val.ad, offset);
-        val.ae += __shfl_down(val.ae, offset);
-        val.af += __shfl_down(val.af, offset);
-        val.ag += __shfl_down(val.ag, offset);
+        val.aa += __shfl_down_sync(active_mask, val.aa, offset);
+        val.ab += __shfl_down_sync(active_mask, val.ab, offset);
+        val.ac += __shfl_down_sync(active_mask, val.ac, offset);
+        val.ad += __shfl_down_sync(active_mask, val.ad, offset);
+        val.ae += __shfl_down_sync(active_mask, val.ae, offset);
+        val.af += __shfl_down_sync(active_mask, val.af, offset);
+        val.ag += __shfl_down_sync(active_mask, val.ag, offset);
 
-        val.bb += __shfl_down(val.bb, offset);
-        val.bc += __shfl_down(val.bc, offset);
-        val.bd += __shfl_down(val.bd, offset);
-        val.be += __shfl_down(val.be, offset);
-        val.bf += __shfl_down(val.bf, offset);
-        val.bg += __shfl_down(val.bg, offset);
+        val.bb += __shfl_down_sync(active_mask, val.bb, offset);
+        val.bc += __shfl_down_sync(active_mask, val.bc, offset);
+        val.bd += __shfl_down_sync(active_mask, val.bd, offset);
+        val.be += __shfl_down_sync(active_mask, val.be, offset);
+        val.bf += __shfl_down_sync(active_mask, val.bf, offset);
+        val.bg += __shfl_down_sync(active_mask, val.bg, offset);
 
-        val.cc += __shfl_down(val.cc, offset);
-        val.cd += __shfl_down(val.cd, offset);
-        val.ce += __shfl_down(val.ce, offset);
-        val.cf += __shfl_down(val.cf, offset);
-        val.cg += __shfl_down(val.cg, offset);
+        val.cc += __shfl_down_sync(active_mask, val.cc, offset);
+        val.cd += __shfl_down_sync(active_mask, val.cd, offset);
+        val.ce += __shfl_down_sync(active_mask, val.ce, offset);
+        val.cf += __shfl_down_sync(active_mask, val.cf, offset);
+        val.cg += __shfl_down_sync(active_mask, val.cg, offset);
 
-        val.dd += __shfl_down(val.dd, offset);
-        val.de += __shfl_down(val.de, offset);
-        val.df += __shfl_down(val.df, offset);
-        val.dg += __shfl_down(val.dg, offset);
+        val.dd += __shfl_down_sync(active_mask, val.dd, offset);
+        val.de += __shfl_down_sync(active_mask, val.de, offset);
+        val.df += __shfl_down_sync(active_mask, val.df, offset);
+        val.dg += __shfl_down_sync(active_mask, val.dg, offset);
 
-        val.ee += __shfl_down(val.ee, offset);
-        val.ef += __shfl_down(val.ef, offset);
-        val.eg += __shfl_down(val.eg, offset);
+        val.ee += __shfl_down_sync(active_mask, val.ee, offset);
+        val.ef += __shfl_down_sync(active_mask, val.ef, offset);
+        val.eg += __shfl_down_sync(active_mask, val.eg, offset);
 
-        val.ff += __shfl_down(val.ff, offset);
-        val.fg += __shfl_down(val.fg, offset);
+        val.ff += __shfl_down_sync(active_mask, val.ff, offset);
+        val.fg += __shfl_down_sync(active_mask, val.fg, offset);
 
-        val.residual += __shfl_down(val.residual, offset);
-        val.inliers += __shfl_down(val.inliers, offset);
+        val.residual += __shfl_down_sync(active_mask, val.residual, offset);
+        val.inliers += __shfl_down_sync(active_mask, val.inliers, offset);
     }
 
     return val;
@@ -186,22 +187,23 @@ __global__ void reduceSum(JtJJtrSE3 * in, JtJJtrSE3 * out, int N)
 
 __inline__  __device__ JtJJtrSO3 warpReduceSum(JtJJtrSO3 val)
 {
+    const unsigned active_mask = 0xffffffff;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val.aa += __shfl_down(val.aa, offset);
-        val.ab += __shfl_down(val.ab, offset);
-        val.ac += __shfl_down(val.ac, offset);
-        val.ad += __shfl_down(val.ad, offset);
+        val.aa += __shfl_down_sync(active_mask, val.aa, offset);
+        val.ab += __shfl_down_sync(active_mask, val.ab, offset);
+        val.ac += __shfl_down_sync(active_mask, val.ac, offset);
+        val.ad += __shfl_down_sync(active_mask, val.ad, offset);
 
-        val.bb += __shfl_down(val.bb, offset);
-        val.bc += __shfl_down(val.bc, offset);
-        val.bd += __shfl_down(val.bd, offset);
+        val.bb += __shfl_down_sync(active_mask, val.bb, offset);
+        val.bc += __shfl_down_sync(active_mask, val.bc, offset);
+        val.bd += __shfl_down_sync(active_mask, val.bd, offset);
 
-        val.cc += __shfl_down(val.cc, offset);
-        val.cd += __shfl_down(val.cd, offset);
+        val.cc += __shfl_down_sync(active_mask, val.cc, offset);
+        val.cd += __shfl_down_sync(active_mask, val.cd, offset);
 
-        val.residual += __shfl_down(val.residual, offset);
-        val.inliers += __shfl_down(val.inliers, offset);
+        val.residual += __shfl_down_sync(active_mask, val.residual, offset);
+        val.inliers += __shfl_down_sync(active_mask, val.inliers, offset);
     }
 
     return val;
@@ -679,10 +681,11 @@ void rgbStep(const DeviceArray2D<DataTerm> & corresImg,
 
 __inline__  __device__ int2 warpReduceSum(int2 val)
 {
+    const unsigned active_mask = 0xffffffff;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val.x += __shfl_down(val.x, offset);
-        val.y += __shfl_down(val.y, offset);
+        val.x += __shfl_down_sync(active_mask, val.x, offset);
+        val.y += __shfl_down_sync(active_mask, val.y, offset);
     }
 
     return val;
