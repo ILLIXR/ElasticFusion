@@ -296,7 +296,7 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
             bool shouldFillIn = !denseEnough(imageBuff);
             TOCK("autoFill");
 
-            TICK("odomInit");
+            TICK("odomInit1");
             //WARNING initICP* must be called before initRGB*
             frameToModel.initICPModel(shouldFillIn ? &fillIn.vertexTexture : indexMap.vertexTex(),
                                       shouldFillIn ? &fillIn.normalTexture : indexMap.normalTex(),
@@ -305,7 +305,7 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
 
             frameToModel.initICP(textures[GPUTexture::DEPTH_FILTERED], maxDepthProcessed);
             frameToModel.initRGB(textures[GPUTexture::RGB]);
-            TOCK("odomInit");
+            TOCK("odomInit1");
 
             if(bootstrap)
             {
@@ -495,11 +495,13 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
             TICK("Tracking2");
 
             //WARNING initICP* must be called before initRGB*
+            TICK("odomInit2");
             modelToModel.initICPModel(indexMap.oldVertexTex(), indexMap.oldNormalTex(), maxDepthProcessed, currPose);
             modelToModel.initRGBModel(indexMap.oldImageTex());
 
             modelToModel.initICP(indexMap.vertexTex(), indexMap.normalTex(), maxDepthProcessed);
             modelToModel.initRGB(indexMap.imageTex());
+            TOCK("odomInit2");
 
             Eigen::Vector3f trans = currPose.topRightCorner(3, 1);
             Eigen::Matrix<float, 3, 3, Eigen::RowMajor> rot = currPose.topLeftCorner(3, 3);

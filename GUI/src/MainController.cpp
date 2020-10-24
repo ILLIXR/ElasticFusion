@@ -280,16 +280,18 @@ void MainController::run()
                 if (eFusion->getTick() > 2) {
                     const auto frame_time = Stopwatch::getInstance().getTimings().at("Run");
                     const auto preprocessing_time = Stopwatch::getInstance().getTimings().at("Preprocess");
-                    const auto tracking_time = Stopwatch::getInstance().getTimings().at("Tracking1") + Stopwatch::getInstance().getTimings().at("Tracking2");
+                    const auto image_processing_time = Stopwatch::getInstance().getTimings().at("odomInit1") + Stopwatch::getInstance().getTimings().at("odomInit2");
+                    const auto pose_estimation_time = Stopwatch::getInstance().getTimings().at("Tracking1") + Stopwatch::getInstance().getTimings().at("Tracking2") - image_processing_time;
                     const auto fusion_time = Stopwatch::getInstance().getTimings().at("Fuse::Data") + Stopwatch::getInstance().getTimings().at("Fuse::Copy");
-                    const auto mapping_time = frame_time - preprocessing_time - tracking_time - fusion_time;
+                    const auto mapping_time = frame_time - preprocessing_time - image_processing_time - pose_estimation_time - fusion_time;
                     std::cout << "Run: " << frame_time << "\n";
                     std::cout << "\tPreprocessing: " << preprocessing_time << "\n";
-                    std::cout << "\tTracking: " << tracking_time << "\n";
+                    std::cout << "\tImage processing: " << image_processing_time << "\n";
+                    std::cout << "\tPose estimation: " << pose_estimation_time << "\n";
                     std::cout << "\tMapping: " << mapping_time << "\n";
                     std::cout << "\tFusion: " << fusion_time << "\n";
                     std::cout << "\n";
-                    times.push_back(Times{preprocessing_time, tracking_time, mapping_time, fusion_time, frame_time});
+                    times.push_back(Times{preprocessing_time, image_processing_time, pose_estimation_time, mapping_time, fusion_time, frame_time});
 
                     // Number of map points
                     points.push_back(eFusion->getGlobalModel().lastCount());
@@ -589,32 +591,36 @@ void MainController::run()
 
     // Dump time per frame
     double average_preprocessing_time = 0.0;
-    double average_tracking_time = 0.0;
+    double average_image_processing_time = 0.0;
+    double average_pose_estimation_time = 0.0;
     double average_mapping_time = 0.0;
     double average_fusion_time = 0.0;
     double average_frame_time = 0.0;
 
     std::ofstream output_times_file;
     output_times_file.open("ef_times.data", std::ios::out);
-    output_times_file << "#Frame Preprocessing Tracking Mapping Fusion Total\n";
+    output_times_file << "#Frame Preprocessing ImageProcessing PoseEstimation Mapping Fusion Total\n";
 
     for (unsigned i = 0; i < times.size(); i++) {
         const auto preprocessing_time = times[i].preprocessing;
-        const auto tracking_time = times[i].tracking;
+        const auto image_processing_time = times[i].image_processing;
+        const auto pose_estimation_time = times[i].pose_estimation;
         const auto mapping_time = times[i].mapping;
         const auto fusion_time = times[i].fusion;
         const auto frame_time = times[i].frame;
 
         output_times_file << i
                           << " " << preprocessing_time
-                          << " " << tracking_time
+                          << " " << image_processing_time
+                          << " " << pose_estimation_time
                           << " " << mapping_time
                           << " " << fusion_time
                           << " " << frame_time
                           << std::endl;
 
         average_preprocessing_time += preprocessing_time;
-        average_tracking_time += tracking_time;
+        average_image_processing_time += image_processing_time;
+        average_pose_estimation_time += pose_estimation_time;
         average_mapping_time += mapping_time;
         average_fusion_time += fusion_time;
         average_frame_time += frame_time;
@@ -623,7 +629,8 @@ void MainController::run()
 
     std::cout << "Average frame time = " << average_frame_time / ((double) times.size()) << std::endl;
     std::cout << "Average preprocessing time = " << average_preprocessing_time / ((double) times.size()) << std::endl;
-    std::cout << "Average tracking time = " << average_tracking_time / ((double) times.size()) << std::endl;
+    std::cout << "Average image processing time = " << average_image_processing_time / ((double) times.size()) << std::endl;
+    std::cout << "Average pose estimation time = " << average_pose_estimation_time / ((double) times.size()) << std::endl;
     std::cout << "Average mapping time = " << average_mapping_time / ((double) times.size()) << std::endl;
     std::cout << "Average fusion time = " << average_fusion_time / ((double) times.size()) << std::endl;
 

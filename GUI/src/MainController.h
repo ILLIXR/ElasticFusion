@@ -85,7 +85,8 @@ class MainController
 
         struct Times {
             double preprocessing;
-            double tracking;
+            double image_processing;
+            double pose_estimation;
             double mapping;
             double fusion;
             double frame;
