@@ -6,7 +6,7 @@ mkdir -p deps &> /dev/null
 
 #Installing Pangolin
 if [ ! -d deps/Pangolin ]; then
-    git -C deps clone https://github.com/stevenlovegrove/Pangolin.git
+    git -C deps clone https://github.com/stevenlovegrove/Pangolin.git --branch v0.6
 fi
 cmake ../ -DAVFORMAT_INCLUDE_DIR="" -DCPP11_NO_BOOST=ON -S deps/Pangolin -B deps/Pangolin/build
 make -C deps/Pangolin/build -j$(nproc)
